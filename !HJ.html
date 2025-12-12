@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HJ’s Christmas Gift Boxes 🎁❤️</title>
+<style>
+body { margin:0; font-family:sans-serif; background: linear-gradient(180deg,#fef3f3 0%,#ffffff 100%); }
+.container { max-width:1000px; margin:0 auto; padding:20px; }
+h1 { font-size:2rem; margin-bottom:0.5rem; }
+p.lead { margin:0; color:#065f46; }
+.countdown { font-weight:600; margin-top:8px; color:#064e3b; }
+.grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-top:20px; }
+@media(min-width:720px){.grid{grid-template-columns:repeat(5,1fr)}}
+.gift { position:relative; border-radius:16px; aspect-ratio:1/1; overflow:visible; cursor:pointer; display:flex; align-items:flex-end; justify-content:center; padding:14px; box-shadow:0 8px 24px rgba(15,23,42,0.12); transition: transform 0.3s, box-shadow 0.3s; border:4px solid rgba(255,255,255,0.5); }
+.gift:hover{transform:translateY(-6px); box-shadow:0 18px 40px rgba(15,23,42,0.18);}
+.ribbon-vert{position:absolute;left:50%;transform:translateX(-50%);top:0;bottom:0;width:22px;background:rgba(255,255,255,0.18);pointer-events:none;}
+.ribbon-horz{position:absolute;top:50%;left:0;right:0;height:20px;transform:translateY(-50%);background:rgba(255,255,255,0.18);pointer-events:none;}
+.bow{position:absolute;top:-10px;left:50%;transform:translateX(-50%);width:48px;height:28px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;}
+.day-label{position:absolute;left:8px;top:8px;background:rgba(255,255,255,0.7);padding:6px 8px;border-radius:10px;font-weight:700;font-size:12px;color:#083344;box-shadow:0 4px 10px rgba(2,6,23,0.06);}
+.closed-inner{text-align:center;color:white;}
+.closed-inner .emoji{font-size:34px;}
+.opened-inner{text-align:center;color:#0f172a;padding-bottom:8px;}
+.preview{font-size:12px;color:rgba(2,6,23,0.6);margin-top:6px;}
+.opened{background:#fff;border-color:#ef4444;}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.45);display:none;align-items:center;justify-content:center;padding:20px;}
+.modal{background:white;border-radius:16px;max-width:520px;width:100%;padding:20px;box-shadow:0 20px 50px rgba(2,6,23,0.3);}
+.modal h2{margin:0 0 8px 0;}
+.modal .coupon{border:2px dashed #ef4444;padding:14px;border-radius:12px;background:#fff6f6;margin-top:10px;}
+.close-btn{display:inline-block;margin-top:14px;padding:8px 12px;border-radius:10px;background:#f3f4f6;border:1px solid #e5e7eb;cursor:pointer;}
+footer{margin-top:18px;color:#065f46;font-size:13px;}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>HJ’s Christmas Gift Boxes 🎁❤️</h1>
+<p class="lead">Open one box per day. Each box holds a sweet message just for you 💌</p>
+<div class="countdown" id="countdown">Loading countdown…</div>
+<div class="grid" id="grid"></div>
+<footer>Made with love ❤️ — Merry Christmas</footer>
+</div>
+
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <h2 id="modalTitle">A special message</h2>
+    <div id="modalBody"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px">
+      <div class="text-sm text-gray-500">Day <span id="modalDay">-</span></div>
+      <button class="close-btn" id="closeBtn">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+const TARGET=new Date('2025-12-25T00:00:00');
+const TOTAL=14;
+const STORAGE_KEY='hj_advent_opened_v1';
+const STORAGE_LAST='hj_advent_last_v1';
+const MESSAGES=[
+"Every day with you feels like unwrapping a gift I never get tired of. ❤️",
+"You make my world warmer than any Christmas light ever could. ✨",
+"I love you more than hot cocoa on a snowy night. ☕❄️",
+"Your smile is my favorite holiday magic. 🎄💫",
+"Thank you for being the heart of my every season. ❤️",
+"You make even the quiet moments feel special. I adore you. 🌟",
+"Loving you is my favorite part of every day. 🎁",
+"You are the calm, the joy, and the love I come home to. 🏡❤️",
+"Being with you feels like Christmas morning — exciting and full of warmth. 🎄",
+"I fall for you more and more, in every little way. 💕",
+"You’re my favorite person, today and always. 🌹",
+"I’m grateful for you — for your love, your heart, your everything. ✨",
+"You make my life sweeter than any holiday treat. 🍰❤️",
+"Thank you for loving me in your gentle, wonderful way. 🌟"
+];
+const COLORS=[
+"linear-gradient(135deg, #f87171, #22c55e)",
+"linear-gradient(135deg, #22c55e, #16a34a)",
+"linear-gradient(135deg, #facc15, #ef4444)",
+"linear-gradient(135deg, #fb923c, #dc2626)",
+"linear-gradient(135deg, #f43f5e, #ec4899)",
+"linear-gradient(135deg, #3b82f6, #06b6d4)",
+"linear-gradient(135deg, #6366f1, #a78bfa)",
+"linear-gradient(135deg, #8b5cf6, #ec4899)",
+"linear-gradient(135deg, #14b8a6, #22c55e)",
+"linear-gradient(135deg, #84cc16, #16a34a)",
+"linear-gradient(135deg, #f59e0b, #ef4444)",
+"linear-gradient(135deg, #d946ef, #a855f7)",
+"linear-gradient(135deg, #22d3ee, #3b82f6)",
+"linear-gradient(135deg, #dc2626, #16a34a)"
+];
+
+let opened=JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]');
+let lastOpen=localStorage.getItem(STORAGE_LAST)||null;
+
+function formatDateKey(d){ const y=d.getFullYear(); const m=String(d.getMonth()+1).padStart(2,'0'); const day=String(d.getDate()).padStart(2,'0'); return `${y}-${m}-${day}`; }
+function timeUntilTarget(){ const now=new Date(); const diff = TARGET - now; if(diff <= 0) return "It's Christmas!"; const d=Math.floor(diff/(1000*60*60*24)); const h=Math.floor((diff/(1000*60*60))%24); const m=Math.floor((diff/(1000*60))%60); const s=Math.floor((diff/1000)%60); return `${d}d ${h}h ${m}m ${s}s`; }
+
+function render() {
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '';
+  const now = new Date();
+  const todayKey = formatDateKey(now);
+  const canOpenToday = lastOpen !== todayKey;
+
+  for(let i=0; i<TOTAL; i++){
+    const openedFlag = opened.includes(i) || now > TARGET;
+    const btn = document.createElement('button');
+    btn.className = 'gift';
+    btn.style.background = openedFlag ? '#fff' : COLORS[i];
+    btn.innerHTML = `
+      ${!openedFlag?'<div class="bow">🎀</div><div class="ribbon-vert"></div><div class="ribbon-horz"></div>':''}
+      <div class="day-label">Day ${i+1}</div>
+      <div class="z-10 text-center px-2 pb-2">
+        ${openedFlag?`<div class="opened-inner"><div class="text-sm font-bold text-red-600">Opened 🎄</div><div class="preview">${MESSAGES[i].slice(0,36)}${MESSAGES[i].length>36?'…':''}</div></div>`:'<div class="closed-inner"><div class="emoji">🎁</div><div style="font-weight:700;margin-top:6px">Tap to Open</div></div>'}
+      </div>
+    `;
+    btn.addEventListener('click',()=>{
+      if(openedFlag){ showModal(i); return; }
+      if(!canOpenToday){ alert('You can only open one box per day.'); return; }
+      openBox(i);
+    });
+    grid.appendChild(btn);
+  }
+}
+
+function openBox(idx){
+  opened.push(idx); opened = Array.from(new Set(opened)).sort((a,b)=>a-b);
+  lastOpen = formatDateKey(new Date());
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(opened));
+  localStorage.setItem(STORAGE_LAST,lastOpen);
+  showModal(idx);
+  render();
+}
+
+function showModal(idx){
+  const modalBg = document.getElementById('modalBg');
+  const modalTitle = document.getElementById('modalTitle');
+  const modalBody = document.getElementById('modalBody');
+  const modalDay = document.getElementById('modalDay');
+  if(idx===TOTAL-1){
+    modalTitle.textContent='🎄 Christmas Gift Coupon 🎁';
+    modalBody.innerHTML=`<div class="coupon"><p>Redeem your Christmas gift with love 🎁❤️</p></div>`;
+  }else{
+    modalTitle.textContent='A special message';
+    modalBody.textContent = MESSAGES[idx];
+  }
+  modalDay.textContent = idx+1;
+  modalBg.style.display='flex';
+}
+
+document.getElementById('closeBtn').addEventListener('click',()=>{ document.getElementById('modalBg').style.display='none'; });
+
+render();
+setInterval(()=>{ document.getElementById('countdown').textContent = timeUntilTarget(); }, 1000);
+});
+</script>
+</body>
+</html>
