@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HJ – Holly Jolly Christmas 🎄</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #ffffff;
+      color: #333;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .container {
+      max-width: 420px;
+      width: 100%;
+      padding: 20px;
+      text-align: center;
+    }
+    h1 {
+      margin-bottom: 8px;
+      font-size: 1.8rem;
+      color: #0b6b2a;
+    }
+    .subtitle {
+      font-size: 0.85rem;
+      color: #777;
+      margin-bottom: 24px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+    .box {
+      background: #ffffff;
+      color: #0b6b2a;
+      border-radius: 16px;
+      padding: 18px 0 12px;
+      font-size: 1.2rem;
+      font-weight: 600;
+      cursor: pointer;
+      position: relative;
+      box-shadow: 0 6px 14px rgba(0,0,0,0.08);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border: 1.5px solid #e6e6e6;
+    }
+    .box::before {
+      content: "🎁";
+      font-size: 2rem;
+      margin-bottom: 6px;
+    }
+    .box.locked {
+      background: #f4f4f4;
+      color: #aaa;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+    .box:hover:not(.locked) {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.12);
+    }
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    .modal-content {
+      background: #ffffff;
+      color: #333;
+      border-radius: 20px;
+      max-width: 360px;
+      width: 100%;
+      padding: 28px 24px;
+      text-align: center;
+      border: 1px solid #e6e6e6;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+    }
+    .modal-content h2 {
+      color: #0b6b2a;
+      margin-bottom: 14px;
+      font-size: 1.3rem;
+    }
+    .btn {
+      margin-top: 20px;
+      background: #0b6b2a;
+      color: #fff;
+      border: none;
+      padding: 12px 26px;
+      border-radius: 999px;
+      font-size: 0.95rem;
+      cursor: pointer;
+      box-shadow: 0 6px 14px rgba(11,107,42,0.25);
+    }
+    .btn:hover {
+      transform: scale(1.05);
+      opacity: 0.9;
+    }
+    .coupon {
+      border: 1.5px dashed #0b6b2a;
+      border-radius: 12px;
+      padding: 16px;
+      margin-top: 14px;
+      background: #fafafa;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>HJ – Holly Jolly Christmas</h1>
+    <p class="subtitle">One box can be opened each day 🤍</p>
+    <div class="grid" id="grid"></div>
+  </div>
+
+  <div class="modal" id="modal">
+    <div class="modal-content" id="modalContent"></div>
+  </div>
+
+  <script>
+    // ======================
+    // CONFIG
+    // ======================
+
+    const START_DATE = new Date('2025-12-14T00:00:00');
+    const TOTAL_BOXES = 12;
+
+    // ======================
+    // DATA
+    // ======================
+
+    const messages = [
+      "Loving you is the easiest and happiest thing I’ve ever done ❤️",
+      "Christmas feels warmer because I have you by my side.",
+      "You are the reason my holidays are full of smiles and love.",
+      "All I want for Christmas is you — today and always.",
+      "Thank you for being my safe place, my joy, my Christmas miracle.",
+      "I feel at home whenever I’m with you.",
+      "Thanks for being my safe place, always.",
+      "Being loved by you is my favorite feeling in the world.",
+      "Love, laughter, and you — that’s my perfect Christmas.",
+      "You make my life sparkle brighter than Christmas lights ✨",
+      "No matter the season, my heart always chooses you 🤍",
+      "You are my favorite person, today and always 🎄"
+    ];
+
+    const coupons = {
+      6: {
+        title: "🎟 Christmas Coupon",
+        text: "Redeem this coupon for one big hug, one kiss, and unlimited love 🤍"
+      },
+      12: {
+        title: "🎟 Christmas Coupon",
+        text: "Redeem this coupon for one special date night together 💕"
+      }
+    };
+
+    const availableSongBoxes = [1,2,3,4,5,7,8,9,10,11];
+    const songBoxIndex = availableSongBoxes[Math.floor(Math.random() * availableSongBoxes.length)];
+
+    const song = {
+      title: "🎧 Today’s Song for You",
+      text: "I chose this song because it reminds me of you 💗",
+      url: "https://youtu.be/YgF5p2QzhN4"
+    };
+
+    // ======================
+    // DATE LOGIC
+    // ======================
+
+    const today = new Date();
+    const diffDays = Math.floor((today - START_DATE) / (1000 * 60 * 60 * 24)) + 1;
+    const availableBoxes = Math.min(Math.max(diffDays, 0), TOTAL_BOXES);
+
+    // ======================
+    // MODAL LOGIC
+    // ======================
+
+    const grid = document.getElementById('grid');
+    const modal = document.getElementById('modal');
+    const modalContent = document.getElementById('modalContent');
+
+    function openModal(html) {
+      modalContent.innerHTML = html;
+      modal.style.display = 'flex';
+    }
+
+    modal.addEventListener('click', () => {
+      modal.style.display = 'none';
+    });
+
+    modalContent.addEventListener('click', (e) => {
+      e.stopPropagation();
+    });
+
+    // ======================
+    // BOX GENERATION
+    // ======================
+
+    for (let i = 1; i <= TOTAL_BOXES; i++) {
+      const box = document.createElement('div');
+      box.className = 'box';
+      box.textContent = i;
+
+      if (i > availableBoxes) {
+        box.classList.add('locked');
+      }
+
+      box.addEventListener('click', () => {
+        if (i > availableBoxes) return;
+
+        if (coupons[i]) {
+          const c = coupons[i];
+          openModal(`
+            <h2>${c.title}</h2>
+            <div class="coupon"><p>${c.text}</p></div>
+            <button class="btn">Screenshot for redeemable</button>
+          `);
+        } else if (i === songBoxIndex) {
+          openModal(`
+            <h2>${song.title}</h2>
+            <p>${song.text}</p>
+            <a href="${song.url}" target="_blank" rel="noopener noreferrer">
+              <button class="btn">Click to listening</button>
+            </a>
+          `);
+        } else {
+          openModal(`
+            <h2>🎄 Merry Christmas</h2>
+            <p>${messages[i - 1]}</p>
+          `);
+        }
+      });
+
+      grid.appendChild(box);
+    }
+  </script>
+</body>
+</html>
